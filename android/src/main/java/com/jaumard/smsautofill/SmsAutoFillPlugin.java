@@ -50,6 +50,7 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
     private Result pendingHintResult;
     private MethodChannel channel;
     private SmsBroadcastReceiver broadcastReceiver;
+    private FlutterPluginBinding pluginBinding;
 
     public SmsAutoFillPlugin() {
     }
@@ -62,22 +63,23 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
      * Plugin registration.
      */
     public static void registerWith(Registrar registrar) {
-//        channel = new MethodChannel(registrar.messenger(), "sms_autofill");
-//        channel.setMethodCallHandler(new SmsAutoFillPlugin());
+        SmsAutoFillPlugin smsAutoFillPlugin = new SmsAutoFillPlugin();
+        smsAutoFillPlugin.channel = new MethodChannel(registrar.messenger(), "sms_autofill");
+        smsAutoFillPlugin.channel.setMethodCallHandler(new SmsAutoFillPlugin());
     }
 
     public void onAttachedToEngine(FlutterPlugin.FlutterPluginBinding binding) {
-        channel = new MethodChannel(binding.getBinaryMessenger(), "sms_autofill");
-        channel.setMethodCallHandler(this);
+        this.pluginBinding = binding;
     }
 
     public void onDetachedFromEngine(FlutterPlugin.FlutterPluginBinding binding) {
-        this.channel.setMethodCallHandler((MethodCallHandler) null);
-        this.channel = null;
+        this.pluginBinding = null;
     }
 
     public void onAttachedToActivity(ActivityPluginBinding binding) {
         this.activity = binding.getActivity();
+        this.channel = new MethodChannel(this.pluginBinding.getBinaryMessenger(), "sms_autofill");
+        this.channel.setMethodCallHandler(this);
         binding.addActivityResultListener(new PluginRegistry.ActivityResultListener() {
 
             @Override
@@ -99,6 +101,7 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity();
     }
 
     @Override
@@ -108,6 +111,7 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
     public void onDetachedFromActivity() {
         this.channel.setMethodCallHandler((MethodCallHandler) null);
         this.channel = null;
+        this.activity = null;
     }
 
     public void onMethodCall(MethodCall call, @NonNull final Result result) {
