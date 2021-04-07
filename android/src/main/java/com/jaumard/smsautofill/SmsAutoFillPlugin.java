@@ -127,8 +127,10 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
                 task.addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        broadcastReceiver = new SmsBroadcastReceiver(new WeakReference<>(SmsAutoFillPlugin.this));
-                        activity.registerReceiver(broadcastReceiver, new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION));
+                        if (broadcastReceiver == null) {
+                            broadcastReceiver = new SmsBroadcastReceiver(new WeakReference<>(SmsAutoFillPlugin.this));
+                            activity.registerReceiver(broadcastReceiver, new IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION));
+                        }
                         result.success(null);
                     }
                 });
@@ -142,6 +144,7 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
                 break;
             case "unregisterListener":
                 try {
+                    broadcastReceiver = null;
                     activity.unregisterReceiver(broadcastReceiver);
                 } catch (Exception ex) {
                     //avoid crash if unregister called multiple times
