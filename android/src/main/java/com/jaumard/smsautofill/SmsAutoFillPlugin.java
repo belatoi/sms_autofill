@@ -193,7 +193,11 @@ public class SmsAutoFillPlugin implements FlutterPlugin, MethodCallHandler, Acti
                 if (plugin.get() == null) {
                     return;
                 } else {
-                    plugin.get().activity.unregisterReceiver(this);
+                    try {
+                        plugin.get().activity.unregisterReceiver(this);
+                    } catch (Exception ex) {
+                        //avoid crash if unregister called multiple times
+                    }
                 }
 
                 Bundle extras = intent.getExtras();
